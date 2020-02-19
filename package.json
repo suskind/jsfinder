@@ -1,0 +1,26 @@
+{
+  "name": "jsfinder",
+  "version": "1.0.0",
+  "description": "Find relevant URLs and stuff in JS",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suskind/jsfinder.git"
+  },
+  "author": "Claudio Gamboa <gamboa@pdvel.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/suskind/jsfinder/issues"
+  },
+  "homepage": "https://github.com/suskind/jsfinder#readme",
+  "dependencies": {
+    "js-beautify": "^1.10.3",
+    "puppeteer": "^2.1.1",
+    "winston": "^3.2.1",
+    "yargs": "^15.1.0"
+  }
+}
