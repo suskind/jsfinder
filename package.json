@@ -20,6 +20,7 @@
   "dependencies": {
     "cli-progress": "^3.6.0",
     "js-beautify": "^1.10.3",
+    "marked": "^0.8.0",
     "puppeteer": "^2.1.1",
     "winston": "^3.2.1",
     "yargs": "^15.1.0"

@@ -80,7 +80,7 @@ const modules = {
     return str;
   },
 
-  prettyFileAndLog: async function(dir, obj, fetchInSource) {
+  prettyFileAndLog: async function(dir, obj, fetchInSource, reObj) {
     const { contentType, filterType, reqHeaders, resHeaders, url, body, status } = obj;
     let extension = '.js';
     let headers = '';
@@ -154,9 +154,9 @@ ${modules.formatHeders(resHeaders, 'res')}
 ${prettyBody}
       `;
 
-      modules.writeBodyAndLog({dir, status, url, body, out, extension, filterType, contentType});
+      modules.writeBodyAndLog({dir, status, url, body, out, extension, filterType, contentType, reObj});
       if (fetchInSource) {
-        modules.searchUrlInSourceAndLog({dir, url, prettyBody, out, extension, filterType, contentType});
+        modules.searchUrlInSourceAndLog({dir, url, prettyBody, out, extension, filterType, contentType, reObj});
       }
       return true;
     }
@@ -165,19 +165,19 @@ ${prettyBody}
   },
 
   writeBodyAndLog: function(obj) {
-    const { dir, url, status, body, out, extension, filterType, contentType } = obj;
+    const { dir, url, status, body, out, extension, filterType, contentType, reObj } = obj;
 
     const hash = crypto.createHash('md5').update(body).digest('hex');
     const fileName = `${hash}${extension}`;
     fs.writeFileSync(`${dir}/${fileName}`, out, 'utf8');
     fs.writeFileSync(`${dir}/index`, `${dir}/${fileName} :: ${url} :: [${status}] (${filterType}) :: (${contentType})\n`, {encoding: 'utf8', flag: 'a'});
-    fs.writeFileSync(`${dir}/index_paths.md`, `## ${url}\n#### ${dir}/[${fileName}](./${fileName})\n##### \`[${status}] (${filterType}) - (${contentType})\`\n`, {encoding: 'utf8', flag: 'a'});
+    fs.writeFileSync(`${dir}/index_${reObj.fileSufix}.md`, `## ${url}\n#### ${dir}/[${fileName}](./${fileName})\n##### \`[${status}] (${filterType}) - (${contentType})\`\n`, {encoding: 'utf8', flag: 'a'});
   
     return true;
   },
 
   searchUrlInSourceAndLog: function(obj) {
-    const { dir, url, prettyBody, out, extension, filterType, contentType } = obj;
+    const { dir, url, prettyBody, out, extension, filterType, contentType, reObj } = obj;
 
     const aBody = prettyBody.split('\n');
     const aLinks = [];
@@ -195,14 +195,18 @@ ${prettyBody}
         }
         // console.log('toFind :: ', toFind)
         if (toFind) {
-          const reg = new RegExp("[^/][`'\"]([\/][a-zA-Z0-9_.-]+)+(?!([gimuy]*[,;\s])|\/\2)");
-          const aMatch = line.match(reg);
+          const regexp = new RegExp(reObj.re);
+          const aMatch = line.match(regexp);
           // console.log(aMatch)
-          if (aMatch) {
-            const path = aMatch[0].replace(/^[^\/]+/g, '');
+          if (aMatch && aMatch.length) {
+            let path = aMatch[0];
+            if (reObj.clean) {
+              const regexpCleanup = new RegExp(reObj.clean, "g");
+              path = path.replace(regexpCleanup, '');
+            }
             aLinks.push(path);
-            fs.writeFileSync(`${dir}/index_paths.md`, ` * \`${path}\` \n`, {encoding: 'utf8', flag: 'a'});
-            fs.writeFileSync(`${dir}/index_paths.md`, `\`\`\`js\n${aMatch.input.trim()}\n\`\`\`\n`, {encoding: 'utf8', flag: 'a'});
+            fs.writeFileSync(`${dir}/index_${reObj.fileSufix}.md`, ` * \`${path}\` \n`, {encoding: 'utf8', flag: 'a'});
+            fs.writeFileSync(`${dir}/index_${reObj.fileSufix}.md`, `\`\`\`js\n${aMatch.input.trim()}\n\`\`\`\n`, {encoding: 'utf8', flag: 'a'});
           }
         }
         toFind = false;

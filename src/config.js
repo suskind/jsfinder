@@ -69,4 +69,10 @@ module.exports = {
     'gstatic.com/recaptcha',
   ],
 
+  reMatchPaths: {
+    re: "[^/][`'\"]([\/][a-zA-Z0-9_.-]+)+(?!([gimuy]*[,;\s])|\/\2)",
+    fileSufix: 'paths',
+    clean: "^[^\/]+",
+  },
+
 };

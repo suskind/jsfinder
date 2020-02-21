@@ -4,14 +4,17 @@ const { exec } = require('child_process');
 const puppeteer = require('puppeteer');
 const yargs = require('yargs');
 const cliProgress = require('cli-progress');
+const marked = require('marked');
 // const loading =  require('loading-cli');
 // const program = require('commander');
+
+// const cssText = require('github-markdown.css');
 
 const iPhoneMobile = puppeteer.devices['iPhone X'];
 
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
-const { chromeConfig } = require('./config');
+const { chromeConfig, reMatchPaths } = require('./config');
 const {
   autoScroll,
   isAdsURL,
@@ -37,6 +40,14 @@ const {
     description: 'Header',
     alias: 'H',
     type: 'array',
+  }).option('regexp', {
+    description: 'RegExp to Match (default: relative paths)',
+    alias: 'r',
+    type: 'string',
+  }).option('logsufix', {
+    description: 'Log file sufix name',
+    alias: 's',
+    type: 'string',
   }).option('browser', {
     description: 'Open browser',
     type: 'boolean',
@@ -178,11 +189,18 @@ const {
     console.log('Beautifying resources...');
 
     progressBar.start(aURLs.length, 0);
-    
+
     await createOutputDir(argv.output);
+
+    // RegExp to apply to match in source
+    const reObj = {
+      re: argv.regexp || reMatchPaths.re,
+      fileSufix: !argv.regexp ? reMatchPaths.fileSufix : (argv.logsufix || 'source_match'),
+      clean: !argv.regexp ? reMatchPaths.clean : null,
+    };
     
     for (let i=0; i < aURLs.length; i++) {
-      await prettyFileAndLog(argv.output, aURLs[i], argv.insource);
+      await prettyFileAndLog(argv.output, aURLs[i], argv.insource, reObj);
       await progressBar.increment();
     }
 
@@ -191,6 +209,13 @@ const {
     if (argv.vscode) {
       exec(`code ${argv.output}`);
     }
+
+    const finalMarkdown = fs.readFileSync(`${argv.output}/index_${reObj.fileSufix}.md`, 'utf8');
+    const finalHTML = await marked(finalMarkdown);
+    const cssText = fs.readFileSync('./src/github-markdown.css', 'utf8');
+    fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, `<html>\n<head>\n<style type="">\n${cssText}\n</style>\n</head>\n<body>\n<article class="markdown-body">`, {encoding: 'utf8', flag: 'a'});
+    fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, finalHTML, {encoding: 'utf8', flag: 'a'});
+    fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, `\n</article></body></html>`, {encoding: 'utf8', flag: 'a'});
   }
   console.log('Done.');
   if (!argv.browser) {
