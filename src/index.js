@@ -172,10 +172,13 @@ const {
     aURLs = JSON.parse(cachedJSON);
   }
 
+  console.log(`Got ${aURLs.length} files...`);
+
   if (argv.output) {
     console.log('Beautifying resources...');
 
     progressBar.start(aURLs.length, 0);
+    
     await createOutputDir(argv.output);
     
     for (let i=0; i < aURLs.length; i++) {
