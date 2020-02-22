@@ -67,6 +67,7 @@ module.exports = {
     'zdassets.com',
     'zendesk.com',
     'gstatic.com/recaptcha',
+    'freshchat.com',
   ],
 
   reMatchPaths: {

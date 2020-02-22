@@ -75,7 +75,7 @@ const {
   // console.log(argv);
 
   if (!argv.url) {
-    console.log('Error: required URL :: --url/-u <https://example.com>');
+    console.log('Error: required URL :: --url/-u <https://example.com> <options: check -h>');
     return;
   }
 
@@ -153,8 +153,8 @@ const {
   
   let hasCache = false;
   const hashCache = crypto.createHash('md5').update(argv.url).digest('hex');
-  const cacheFileName = `/tmp/jsfinder_cache_${hashCache}.json`;
-  if (fs.existsSync('/tmp') && fs.existsSync(cacheFileName)) {
+  const cacheFileName = `/tmp/jsfindercache/jsfinder_cache_${hashCache}.json`;
+  if (fs.existsSync('/tmp') && fs.existsSync('/tmp/jsfindercache') && fs.existsSync(cacheFileName)) {
     hasCache = true;
     if (argv.nocache) {
       hasCache = false;
@@ -176,6 +176,7 @@ const {
       await browser.close();
     }
     console.log('Writing cache file...');
+    await createOutputDir('/tmp/jsfindercache');
     fs.writeFileSync(cacheFileName, JSON.stringify(aURLs), 'utf8');
   } else {
     console.log('Warning :: Using cached data');
@@ -213,7 +214,7 @@ const {
     const finalMarkdown = fs.readFileSync(`${argv.output}/index_${reObj.fileSufix}.md`, 'utf8');
     const finalHTML = await marked(finalMarkdown);
     const cssText = fs.readFileSync('./src/github-markdown.css', 'utf8');
-    fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, `<html>\n<head>\n<style type="">\n${cssText}\n</style>\n</head>\n<body>\n<article class="markdown-body">`, {encoding: 'utf8', flag: 'a'});
+    fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<style type="">\n${cssText}\n</style>\n</head>\n<body>\n<article class="markdown-body">`, {encoding: 'utf8', flag: 'a'});
     fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, finalHTML, {encoding: 'utf8', flag: 'a'});
     fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, `\n</article></body></html>`, {encoding: 'utf8', flag: 'a'});
   }
