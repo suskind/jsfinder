@@ -5,10 +5,6 @@ const puppeteer = require('puppeteer');
 const yargs = require('yargs');
 const cliProgress = require('cli-progress');
 const marked = require('marked');
-// const loading =  require('loading-cli');
-// const program = require('commander');
-
-// const cssText = require('github-markdown.css');
 
 const iPhoneMobile = puppeteer.devices['iPhone X'];
 
@@ -16,11 +12,13 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
 
 const { chromeConfig, reMatchPaths } = require('./config');
 const {
+  setRequestHeaders,
   autoScroll,
   isAdsURL,
   writeOutputTerminal,
   createOutputDir,
   prettyFileAndLog,
+  setRequestCookies,
 } = require("./utils");
  
 (async () => {
@@ -92,10 +90,26 @@ const {
   await page.setRequestInterception(true);
 
   page.on('close', async () => {
-    console.log('PAGE CLOSES');
     await browser.close();
   });
-  page.on('request', req => {
+  let mainHostName = null;
+  page.on('request', async req => {
+    const url = await req.url();
+    const oURL = new URL(url);
+    const curHostName = oURL.hostname;
+    if (req.isNavigationRequest()) {
+      mainHostName = curHostName;
+    }
+    if (curHostName === mainHostName) {
+      const reqHeaders = await req.headers();
+      if (argv.header && argv.header.length) {
+        const newHeaders = await setRequestHeaders(reqHeaders, argv.header);
+        if (newHeaders) {
+          req.continue({headers: newHeaders});
+          return;
+        }
+      }
+    }
     req.continue();
   });
   page.on('response', async res => {
@@ -151,6 +165,11 @@ const {
     await writeOutputTerminal(obj);
   });
   
+  const aCookies = await setRequestCookies(argv.url, argv.header);
+  if (aCookies) {
+    await page.setCookie(...aCookies);
+  }
+
   let hasCache = false;
   const hashCache = crypto.createHash('md5').update(argv.url).digest('hex');
   const cacheFileName = `/tmp/jsfindercache/jsfinder_cache_${hashCache}.json`;
@@ -213,7 +232,7 @@ const {
 
     const finalMarkdown = fs.readFileSync(`${argv.output}/index_${reObj.fileSufix}.md`, 'utf8');
     const finalHTML = await marked(finalMarkdown);
-    const cssText = fs.readFileSync('./src/github-markdown.css', 'utf8');
+    const cssText = fs.readFileSync(`${__dirname}/github-markdown.css`, 'utf8');
     fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<style type="">\n${cssText}\n</style>\n</head>\n<body>\n<article class="markdown-body">`, {encoding: 'utf8', flag: 'a'});
     fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, finalHTML, {encoding: 'utf8', flag: 'a'});
     fs.writeFileSync(`${argv.output}/index_${reObj.fileSufix}.html`, `\n</article></body></html>`, {encoding: 'utf8', flag: 'a'});

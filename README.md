@@ -11,7 +11,7 @@ $ cd jsfinder
 
 $ npm install 
 
-$ ln -s bin/jsfinder /usr/local/bin/jsfinder
+$ ln -s `pwd`/bin/jsfinder /usr/local/bin/jsfinder
 
 $ jsfinder -h
 ```

@@ -12,7 +12,7 @@ module.exports = {
       '--disable-xss-auditor',
       '--ignore-certificate-errors',
       '--allow-running-insecure-content',
-      // '--disable-web-security',
+      // '--disable-web-security', // disabled
       '--disable-resize-lock',
       '--window-size=1280,800',
       '--no-sandbox'
@@ -68,6 +68,12 @@ module.exports = {
     'zendesk.com',
     'gstatic.com/recaptcha',
     'freshchat.com',
+    'userguiding.com',
+    'js.stripe.com',
+    'hubspot.com',
+    'm.stripe.network',
+    'm.stripe.com',
+    'intercom.io',
   ],
 
   reMatchPaths: {

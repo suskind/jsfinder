@@ -24,6 +24,71 @@ const modules = {
     });
   },
 
+  setRequestHeaders: function(reqHeaders, argsHeaders) {
+    let count = 0;
+    if (argsHeaders && argsHeaders.length) {
+      for (let i=0; i < argsHeaders.length; i++) {
+        let curHeader = argsHeaders[i];
+        let aH = curHeader.split(':');
+        if (aH.length > 1) {
+          const kH = aH[0].trim();
+          aH.shift();
+          const kV = aH.join(':').trim();
+          if (kH.toLowerCase() === 'cookie') {
+            cookieHeader.push(kV);
+          } else {
+            reqHeaders[kH] = kV;
+          }
+          count++;
+        }
+      }
+    }
+    if (count > 0) {
+      return reqHeaders;
+    }
+    return null;
+  },
+
+  setRequestCookies: async function(url, argsHeaders) {
+    const oPageUrl = new URL(url);
+    const aCookies = [];
+    let count = 0;
+    if (argsHeaders && argsHeaders.length) {
+      for (let i=0; i < argsHeaders.length; i++) {
+        let curHeader = argsHeaders[i].trim();
+        let aH = curHeader.split(':');
+        if (aH.length > 1) {
+          const kH = aH[0].trim();
+          aH.shift();
+          const kV = aH.join(':').trim();
+          if (kH.toLowerCase() === 'cookie') {
+            const aC = kV.split(';');
+            if (aC.length > 0) {
+              for (let j=0; j < aC.length; j++) {
+                const curCookie = aC[j].trim();
+                const aCookieNameVal = curCookie.split('=');
+                if (aCookieNameVal.length === 2) {
+                  const kC = aCookieNameVal[0].trim();
+                  const kV = aCookieNameVal[1].trim();
+                  aCookies.push({
+                    name: kC,
+                    value: kV,
+                    domain: oPageUrl.hostname,
+                  });
+                  count++;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (count > 0) {
+      return aCookies;
+    }
+    return null;
+  },
 
   isAdsURL: function(url) {
     const list = [].concat(adsBlackList);
