@@ -27,13 +27,13 @@ const {
 
   let aURLs = [];
 
-  const argv = yargs.command('jsfinder', 'Parse JS files for URLs and stuff', {
+  const argv = yargs.command('jsfinder', 'Parse JS files for paths and stuff. ex:\n$ jsfinder -u https//example.com -o /tmp/out --insource ', {
   }).option('url', {
-    description: 'URL to be parsed',
+    description: 'URL to be parsed. ex: -u https://example.com ',
     alias: 'u',
     type: 'string',
   }).option('output', {
-    description: 'Output dir',
+    description: 'Output dir. ex: -o /tmp/out ',
     alias: 'o',
     type: 'string',
   }).option('header', {
@@ -41,34 +41,34 @@ const {
     alias: 'H',
     type: 'array',
   }).option('regexp', {
-    description: 'RegExp to Match (default: relative paths)',
+    description: 'RegExp to Match (default: relative paths)\nex: --insource -r \'(secret|pass).*\'',
     alias: 'r',
     type: 'string',
   }).option('logsufix', {
-    description: 'Log file sufix name',
+    description: 'Log file sufix name.\nex: "-o /tmp/out -r pass -s secret" will create /tmp/out/index_secret.md',
     alias: 's',
     type: 'string',
   }).option('browser', {
-    description: 'Open browser',
+    description: 'Open chromium browser',
     type: 'boolean',
   }).option('ads', {
     description: 'Allow blacklisted ads related URLs',
     type: 'boolean',
   }).option('insource', {
-    description: 'Search for URLs in source',
+    description: 'Search for paths in source',
     type: 'boolean',
   }).option('nocache', {
-    description: 'Ingore cache when it already exists',
+    description: 'Ignore previous cached requests',
     type: 'boolean',
   }).option('mobile', {
     description: 'Emulate Mobile phone (iPhone X)',
     type: 'string',
     alias: 'm',
   }).option('vscode', {
-    description: 'Open output dir with VSCode',
+    description: 'Open output dir with VSCode.\nex: "-o /tmp/out --vscode" will exec "code /tmp/out"',
     type: 'boolean',
   }).option('noscroll', {
-    description: 'Dont do autoscroll',
+    description: 'Force to don\'t do autoscroll',
     type: 'boolean',
   }).help().alias('help', 'h').argv;
 
