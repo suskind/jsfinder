@@ -1,6 +1,23 @@
 # jsfinder
 Find paths or stuff in URL's JS files and XHR requests
 
+
+## Install 
+
+```
+$ git clone https://github.com/suskind/jsfinder.git
+
+$ cd jsfinder
+
+$ npm install 
+
+$ ln -s bin/jsfinder /usr/local/bin/jsfinder
+
+$ jsfinder -h
+```
+
+## Options
+
 ```
 Commands:
   jsfinder jsfinder  Parse JS files for paths and stuff. ex:
