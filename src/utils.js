@@ -34,9 +34,7 @@ const modules = {
           const kH = aH[0].trim();
           aH.shift();
           const kV = aH.join(':').trim();
-          if (kH.toLowerCase() === 'cookie') {
-            cookieHeader.push(kV);
-          } else {
+          if (kH.toLowerCase() !== 'cookie') {
             reqHeaders[kH] = kV;
           }
           count++;
