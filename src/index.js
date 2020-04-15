@@ -113,56 +113,60 @@ const {
     req.continue();
   });
   page.on('response', async res => {
-    const url = await res.url();
-    
-    if (!argv.ads) {
-      if (isAdsURL(url)) {
+    try {
+      const url = await res.url();
+      
+      if (!argv.ads) {
+        if (isAdsURL(url)) {
+          return;
+        }
+      }
+      const method = await res.request().method();
+      const isDataUrl = url.indexOf('data');
+      if (isDataUrl > -1) {
         return;
       }
-    }
-    const method = await res.request().method();
-    const isDataUrl = url.indexOf('data');
-    if (isDataUrl > -1) {
-      return;
-    }
 
-    let filterType = await res.request().resourceType();
-    if (['document', 'script', 'xhr'].indexOf(filterType) === -1) {
-      return;
-    }
-    const status = await res.status();
-    const statusText = await res.statusText();
-    const reqHeaders = await res.request().headers();
-    const resHeaders = { ...(await res.headers()) };
-    const type = 'content-type' in resHeaders
-          ? resHeaders['content-type'].split(';')[0]
-          : null;
-    if (filterType === 'document' && type && (type.indexOf('javascript') > -1 || type.indexOf('json') > -1)) {
-      filterType = 'document_script';
-    }
-    let resBody = '';
-    try {
-      resBody = await res.text();
+      let filterType = await res.request().resourceType();
+      if (['document', 'script', 'xhr'].indexOf(filterType) === -1) {
+        return;
+      }
+      const status = await res.status();
+      const statusText = await res.statusText();
+      const reqHeaders = await res.request().headers();
+      const resHeaders = { ...(await res.headers()) };
+      const type = 'content-type' in resHeaders
+            ? resHeaders['content-type'].split(';')[0]
+            : null;
+      if (filterType === 'document' && type && (type.indexOf('javascript') > -1 || type.indexOf('json') > -1)) {
+        filterType = 'document_script';
+      }
+      let resBody = '';
+      try {
+        resBody = await res.text();
+      } catch (ex) {
+        resBody = null;
+      }
+
+      if (!resBody) {
+        return;
+      }
+      
+      const obj = {
+        filterType,
+        method,
+        status,
+        url,
+        contentType: type,
+        reqHeaders,
+        resHeaders,
+        body: resBody,
+      };
+      aURLs.push(obj);
+      await writeOutputTerminal(obj);
     } catch (ex) {
-      resBody = null;
+      console.error('Error on onResponse event...');
     }
-
-    if (!resBody) {
-      return;
-    }
-    
-    const obj = {
-      filterType,
-      method,
-      status,
-      url,
-      contentType: type,
-      reqHeaders,
-      resHeaders,
-      body: resBody,
-    };
-    aURLs.push(obj);
-    await writeOutputTerminal(obj);
   });
   
   const aCookies = await setRequestCookies(argv.url, argv.header);
@@ -185,7 +189,15 @@ const {
     if (argv.mobile) {
       await page.emulate(iPhoneMobile);
     }
-    await page.goto(argv.url, {waitUntil: 'networkidle2'});
+    try {
+      await page.goto(argv.url, {
+        waitUntil: 'networkidle2',
+        // networkIdleTimeout: 5000,
+        timeout: 300000
+      });
+    } catch (ex) {
+      console.error('Error on page.goto :: ', ex);
+    }
 
     if (!argv.noscroll) {
       await autoScroll(page);
